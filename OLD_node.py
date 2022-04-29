@@ -58,7 +58,7 @@ class Node:
                 self.print_blockchain_elements()
             elif user_choice == '4':
                 if len(self.blockchain.chain) >= 1:
-                    self.blockchain.chain[0] = {'previousHash': '', 'index': 0,
+                    self.blockchain.chain[0] = {'previous_hash': '', 'index': 0,
                                                 'transactions': [
                                                     {'sender': 'Chris', 'recipient': 'Max', 'amount': 100}]}
             elif user_choice == '5':

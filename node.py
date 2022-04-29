@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from wallet import Wallet
 from blockchain import Blockchain
+from any_case import converts_keys
 
 app = Flask(__name__)
 
@@ -25,16 +26,16 @@ def create_keys():
         global blockchain
         blockchain = Blockchain(wallet.public_key, port)
         response = {
-            'publicKey': wallet.public_key,
-            'privateKey': wallet.private_key,
+            'public_key': wallet.public_key,
+            'private_key': wallet.private_key,
             'funds': blockchain.get_balance()
         }
-        return jsonify(response), 201
+        return jsonify(converts_keys(response, case='camel')), 201
     else:
         response = {
             'message': 'Saving the keys failed.',
         }
-        return jsonify(response), 500
+        return jsonify(converts_keys(response, case='camel')), 500
 
 
 @app.route('/wallet', methods=['GET'])
@@ -43,16 +44,16 @@ def load_keys():
         global blockchain
         blockchain = Blockchain(wallet.public_key, port)
         response = {
-            'publicKey': wallet.public_key,
-            'privateKey': wallet.private_key,
+            'public_key': wallet.public_key,
+            'private_key': wallet.private_key,
             'funds': blockchain.get_balance()
         }
-        return jsonify(response), 201
+        return jsonify(converts_keys(response, case='camel')), 201
     else:
         response = {
             'message': 'Loading the keys failed.',
         }
-        return jsonify(response), 500
+        return jsonify(converts_keys(response, case='camel')), 500
 
 
 @app.route('/balance', methods=['GET'])
@@ -63,13 +64,13 @@ def get_balance():
             'message': 'Fetched balance successfully.',
             'funds': balance,
         }
-        return jsonify(response),
+        return jsonify(converts_keys(response, case='camel')), 200
     else:
         response = {
             'message': 'Loading balance failed',
-            'walletSetUp': wallet.public_key is not None,
+            'wallet_set_up': wallet.public_key is not None,
         }
-        return jsonify(response), 500
+        return jsonify(converts_keys(response, case='camel')), 500
 
 
 @app.route('/broadcast-transaction', methods=['POST'])
@@ -79,13 +80,13 @@ def broadcast_transaction():
         response = {
             'message': 'No data found',
         }
-        return jsonify(response), 400
+        return jsonify(converts_keys(response, case='camel')), 400
     required = ['sender', 'recipient', 'amount', 'signature']
     if not all(key in values for key in required):
         response = {
             'message': 'Some fields are missing',
         }
-        return jsonify(response), 400
+        return jsonify(converts_keys(response, case='camel')), 400
     success = blockchain.add_transaction(values['recipient'], values['sender'], values['signature'], values['amount'])
     if success:
         response = {
@@ -97,12 +98,12 @@ def broadcast_transaction():
                 'signature': values['signature'],
             },
         }
-        return jsonify(response), 201
+        return jsonify(converts_keys(response, case='camel')), 201
     else:
         response = {
             'message': 'Creating a transaction failed',
         }
-        return jsonify(response), 500
+        return jsonify(converts_keys(response, case='camel')), 500
 
 
 @app.route('/broadcast-block', methods=['POST'])
@@ -112,35 +113,35 @@ def broadcast_block():
         response = {
             'message': 'No data found',
         }
-        return jsonify(response), 400
+        return jsonify(converts_keys(response, case='camel')), 400
     if 'block' not in values:
         response = {
             'message': 'Some fields are missing',
         }
-        return jsonify(response), 400
+        return jsonify(converts_keys(response, case='camel')), 400
     block = values['block']
     if block['index'] == blockchain.chain[-1].index + 1:
         if blockchain.add_block(block):
             response = {
                 'message': 'Block added',
             }
-            return jsonify(response), 201
+            return jsonify(converts_keys(response, case='camel')), 201
         else:
             response = {
                 'message': 'Block seems invalid',
             }
-            return jsonify(response), 409
+            return jsonify(converts_keys(response, case='camel')), 409
     elif block['index'] > blockchain.chain[-1].index:
         response = {
             'message': 'Blockchain seems to differ from local blockchain.',
         }
         blockchain.resolve_conflicts = True
-        return jsonify(response), 200
+        return jsonify(converts_keys(response, case='camel')), 200
     else:
         response = {
             'message': 'Blockchain seems to be shorter, block not added',
         }
-        return jsonify(response), 409
+        return jsonify(converts_keys(response, case='camel')), 409
 
 
 @app.route('/transaction', methods=['POST'])
@@ -149,21 +150,21 @@ def add_transaction():
         response = {
             'message': 'No wallet set up',
         }
-        return jsonify(response), 400
+        return jsonify(converts_keys(response, case='camel')), 400
 
     values = request.get_json()
     if not values:
         response = {
             'message': 'No data found',
         }
-        return jsonify(response), 400
+        return jsonify(converts_keys(response, case='camel')), 400
 
     required_fields = ['recipient', 'amount']
     if not all(field in values for field in required_fields):
         response = {
             'message': 'Required data is missing',
         }
-        return jsonify(response), 400
+        return jsonify(converts_keys(response, case='camel')), 400
 
     recipient = values['recipient']
     amount = values['amount']
@@ -180,12 +181,12 @@ def add_transaction():
             },
             'funds': blockchain.get_balance(),
         }
-        return jsonify(response), 201
+        return jsonify(converts_keys(response, case='camel')), 201
     else:
         response = {
             'message': 'Creating a transaction failed',
         }
-        return jsonify(response), 500
+        return jsonify(converts_keys(response, case='camel')), 500
 
 
 @app.route('/mine', methods=['POST'])
@@ -194,7 +195,7 @@ def mine():
         response = {
             'message': 'Resolve conflicts first, block not added.',
         }
-        return jsonify(response), 409
+        return jsonify(converts_keys(response, case='camel')), 409
     block = blockchain.mine_block()
     if block is not None:
         dict_block = block.__dict__.copy()
@@ -204,13 +205,13 @@ def mine():
             'block': dict_block,
             'funds': blockchain.get_balance(),
         }
-        return jsonify(response), 201
+        return jsonify(converts_keys(response, case='camel')), 201
     else:
         response = {
             'message': 'Adding a block failed.',
-            'walletSetUp': wallet.public_key is not None
+            'wallet_set_up': wallet.public_key is not None
         }
-        return jsonify(response), 500
+        return jsonify(converts_keys(response, case='camel')), 500
 
 
 @app.route('/resolve-conflicts', methods=['POST'])
@@ -224,7 +225,7 @@ def resolve_conflicts():
         response = {
             'message': 'Local chain kept.',
         }
-    return jsonify(response), 200
+    return jsonify(converts_keys(response, case='camel')), 200
 
 
 @app.route('/transactions', methods=['GET'])
@@ -250,19 +251,19 @@ def add_node():
         response = {
             'message': 'No data attached',
         }
-        return jsonify(response), 400
+        return jsonify(converts_keys(response, case='camel')), 400
     if 'node' not in values:
         response = {
             'message': 'No node data found',
         }
-        return jsonify(response), 400
+        return jsonify(converts_keys(response, case='camel')), 400
     node = values.get('node')
     blockchain.add_peer_node(node)
     response = {
         'message': 'Node added successfully',
-        'allNodes': blockchain.get_peer_nodes(),
+        'all_nodes': blockchain.get_peer_nodes(),
     }
-    return jsonify(response), 201
+    return jsonify(converts_keys(response, case='camel')), 201
 
 
 @app.route('/node/<node_url>', methods=['DELETE'])
@@ -271,22 +272,22 @@ def remove_node(node_url):
         response = {
             'message': 'No node found',
         }
-        return jsonify(response), 400
+        return jsonify(converts_keys(response, case='camel')), 400
     blockchain.remove_peer_node(node_url)
     response = {
         'message': 'Node removed',
-        'allNodes': blockchain.get_peer_nodes(),
+        'all_nodes': blockchain.get_peer_nodes(),
     }
-    return jsonify(response), 200
+    return jsonify(converts_keys(response, case='camel')), 200
 
 
 @app.route('/nodes', methods=['GET'])
 def get_nodes():
     nodes = blockchain.get_peer_nodes()
     response = {
-        'allNodes': nodes,
+        'all_nodes': nodes,
     }
-    return jsonify(response), 200
+    return jsonify(converts_keys(response, case='camel')), 200
 
 
 if __name__ == '__main__':

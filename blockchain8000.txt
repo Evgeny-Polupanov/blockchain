@@ -1,3 +1,0 @@
-[{"index": 0, "previousHash": "", "transactions": [], "timestamp": 0, "proof": 100}]
-[]
-[]
