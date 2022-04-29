@@ -6,7 +6,6 @@ from wallet import Wallet
 
 class Node:
     def __init__(self):
-        # self.id = str(uuid4())
         self.wallet = Wallet()
         self.wallet.create_keys()
         self.blockchain = Blockchain(self.wallet.public_key)

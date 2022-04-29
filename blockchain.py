@@ -7,7 +7,6 @@ from transaction import Transaction
 
 from utility.hash_util import hash_block
 
-# Initializing our (empty) blockchain list
 from utility.verification import Verification
 from wallet import Wallet
 
@@ -41,10 +40,7 @@ class Blockchain:
     def load_data(self):
         try:
             with open('blockchain-{}.txt'.format(self.node_id), mode='r') as file:
-                # file_content = pickle.loads(file.read())
                 file_content = file.readlines()
-                # blockchain = file_content['chain']
-                # open_transactions = file_content['open_transactions']
                 blockchain = json.loads(file_content[0][:-1])
                 updated_blockchain = []
                 for block in blockchain:
@@ -88,11 +84,6 @@ class Blockchain:
                 file.write(json.dumps(savable_transactions))
                 file.write('\n')
                 file.write(json.dumps(list(self.__peer_nodes)))
-                # data_to_save = {
-                #     'chain': blockchain,
-                #     'open_transactions': open_transactions,
-                # }
-                # file.write(pickle.dumps(data_to_save))
         except IOError:
             print('Saving failed.')
 
@@ -144,8 +135,6 @@ class Blockchain:
             :amount: The amount of coins sent with the transaction (default = 1.0 coin)
             :sender: The sender of the coins.
         """
-        # if self.public_key is None:
-        #     return False
         transaction = Transaction(sender, recipient, signature, amount)
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
@@ -170,7 +159,6 @@ class Blockchain:
         last_block = self.__chain[-1]
         hash_of_block = hash_block(last_block)
         proof = self.proof_of_work()
-        # reward_transaction = {'sender': 'MINING', 'recipient': owner, 'amount': MINING_REWARD}
         reward_transaction = Transaction('MINING', self.public_key, '', MINING_REWARD)
         copied_transactions = self.__open_transactions[:]
         for transaction in copied_transactions:
