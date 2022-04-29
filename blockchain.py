@@ -190,7 +190,8 @@ class Blockchain:
         hashes_match = hash_block(self.chain[-1]) == block['previous_hash']
         if not proof_is_valid or not hashes_match:
             return False
-        converted_block = Block(block['index'], block['previous_hash'], transactions, block['proof'], block['timestamp'])
+        converted_block = Block(block['index'], block['previous_hash'], transactions, block['proof'],
+                                block['timestamp'])
         self.__chain.append(converted_block)
         stored_transactions = self.__open_transactions[:]
         for incoming_transaction in block['transactions']:
